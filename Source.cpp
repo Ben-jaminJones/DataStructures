@@ -36,23 +36,23 @@ private:
 
 public:
 	Player(string n, int s) {
-		
+
 		name = n;
 		score = s;
 	}
 	string getName() { return name; };
 	int getScore() { return score; };
-	void setScore(int num) {score = num;}
+	void setScore(int num) { score = num; }
 };
 
 class DiceGame {
 protected:
-	
+
 	Player* players;
 
 private:
 
-	
+
 
 public:
 
@@ -63,7 +63,7 @@ public:
 	//
 	//DiceGame(int numPlayer, int numDice, int numSides, std::string gameName) {
 		//if (gameName == "Boston") { BostonDiceGame(numPlayer, numDice, numSides); }
-			
+
 		//else if (gameName == "Knockout") { KnockOut(numPlayer, numDice, numSides); }
 		//else {
 			//std::cout << "You have selected an invalid game type motherfucker" << std::endl;
@@ -74,7 +74,7 @@ public:
 		myDice = Dice(sides);
 		numDice = num;
 	}
-	
+
 	void initPlayers(int numPlayers) {
 
 		//Redeclaring and clearing any pre-existing playerArray
@@ -116,21 +116,35 @@ public:
 		for (int i = 0; i < size(playerArray); i++) { scorefile << playerArray[i].getName() << ":" << playerArray[i].getScore() << endl; }
 	}
 
-	int getHighestScore() {
+	Player getHighestScore() {
 
-		ifstream scorefile;
+		ifstream scorefile("Scorecard.txt");
 		if (!scorefile.is_open()) {
 			cerr << "File does not exist, or was not able to open" << endl;
-			return 0;
+			return Player("No one", 0);
 		}
 
+		vector<string> names;
 		vector<int> scores;
-		string playerName;
-		string playerScore;
-		int highScore;
-		int colonIndex;
+		string score;
 
-		//return Player(playerName, highestscore)
+		while (!iscntrl(scorefile.peek()) && !scorefile.eof()) {
+			names.push_back("");
+			getline(scorefile, names[size(names)-1], ':');
+			scorefile >> score;
+			scores.push_back(atoi(score.c_str()));
+		}
+
+		int highScore = 0;
+		string bestPlayer{};
+
+		for (int i = 0; i<size(scores); i++) {
+			if (highScore < scores[i]) {
+				highScore = score[i];
+				bestPlayer = names[i];
+			}
+		}
+		return Player(bestPlayer, highScore);
 	}
 	virtual void play() = 0;
 
@@ -146,7 +160,7 @@ private:
 public:
 
 	KnockOut(int numPlayers, int numDice, int numSides) {
-		
+
 		setDice(numDice, numSides);
 		initPlayers(numPlayers);
 
@@ -169,7 +183,7 @@ public:
 
 		//Printing first line of the game, showing the
 		cout << "Welcome to Knock out! The target score is: " << targetScore << endl;
-		
+
 		//Initializing a copy of the playerArray, to store all remaining players
 		vector<Player> remainingPlayers = playerArray;
 
@@ -177,15 +191,15 @@ public:
 		int currentPlayer = 0;
 
 		while (remainingPlayers.size() > 1) {
-			
+
 			int playerRoll = rollDice();
-			
+
 			cout << "It is " << remainingPlayers[currentPlayer].getName() << "'s Turn! " << remainingPlayers[currentPlayer].getName() << " has rolled: " << playerRoll << endl;
 
 
 			if (playerRoll == targetScore) {
 				cout << remainingPlayers[currentPlayer].getName() << " has been eliminated!" << endl;
-				remainingPlayers.erase(remainingPlayers.begin()+currentPlayer);
+				remainingPlayers.erase(remainingPlayers.begin() + currentPlayer);
 
 				//Handling an edge case where the last player in the array is eliminated
 				currentPlayer = currentPlayer % remainingPlayers.size();
@@ -196,13 +210,13 @@ public:
 				//If no player eliminated, increment current player and use % to stay within valid array index
 				currentPlayer = (currentPlayer + 1) % remainingPlayers.size();
 			}
-			
+
 		}
 		cout << remainingPlayers[0].getName() << " has won Knockout! You have been awarded " << targetScore << " points!" << endl;
-		
+
 		for (int i = 0; i < size(playerArray); i++) {
-			if (playerArray[i].getName() == remainingPlayers[0].getName()) { 
-				playerArray[i].setScore(playerArray[i].getScore() + targetScore); 
+			if (playerArray[i].getName() == remainingPlayers[0].getName()) {
+				playerArray[i].setScore(playerArray[i].getScore() + targetScore);
 				return;
 			}
 		}
@@ -228,7 +242,7 @@ public:
 	//The highest roll from each iteration is returned, and the play() logic
 	//will repeatedly call this to generate a vector one entry at a time
 	int rollDiceHighest(int numRolls) {
-		
+
 		//Initializing variable to store highest roll locally
 		int highestRoll = 0;
 
@@ -250,7 +264,7 @@ public:
 
 			//Declaring an integer score to store an individual player's score
 			int playerScore = 0;
-			
+
 			//Printing the current player's turn
 			cout << "It is Player " << i + 1 << "'s Turn!" << endl;
 
@@ -259,13 +273,13 @@ public:
 
 				//Calling rollDiceHighest() to return the highest value roll each round
 				int newRoll = rollDiceHighest(numDice - rollnum);
-				
+
 				//Incrementing playerScore
 				playerScore += newRoll;
 
 				//Printing the rolled value and current round score
 				cout << "Round " << rollnum + 1 << ": Highest roll is " << newRoll << ". Score is now: " << playerScore << endl;
-				 
+
 			}
 
 			//Storing the player's score in the array
@@ -282,7 +296,7 @@ public:
 				winnerIndex = i;
 			}
 		}
-		
+
 		//Checking for the case of a tie. NO WINNERS IN A TIE
 		for (int i = 0; i < winnerIndex; i++) {
 			if (highestScore == playerArray[i].getScore()) {
@@ -298,10 +312,15 @@ public:
 int main() {
 	//Seeding RNG for consistent output
 	srand(static_cast<unsigned>(time(0)));
-	
+
 	KnockOut newKnockOutGame = KnockOut(4, 3, 6);
 	newKnockOutGame.play();
 	newKnockOutGame.displayScores();
+
+	newKnockOutGame.writeScoresToFile();
+	Player highScorePlayer = newKnockOutGame.getHighestScore();
+
+	cout << highScorePlayer.getName() << " has a highscore of " << highScorePlayer.getScore() << "!\n";
 
 	return 0;
 }
