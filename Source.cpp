@@ -130,7 +130,7 @@ public:
 
 		while (!iscntrl(scorefile.peek()) && !scorefile.eof()) {
 			names.push_back("");
-			getline(scorefile, names[size(names)-1], ':');
+			getline(scorefile, names[size(names) - 1], ':');
 			scorefile >> score;
 			scores.push_back(atoi(score.c_str()));
 		}
@@ -138,9 +138,9 @@ public:
 		int highScore = 0;
 		string bestPlayer{};
 
-		for (int i = 0; i<size(scores); i++) {
+		for (int i = 0; i < size(scores); i++) {
 			if (highScore < scores[i]) {
-				highScore = score[i];
+				highScore = scores[i];
 				bestPlayer = names[i];
 			}
 		}
