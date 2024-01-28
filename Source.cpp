@@ -128,7 +128,7 @@ public:
 		vector<int> scores;
 		string score;
 
-		while (!iscntrl(scorefile.peek()) && !scorefile.eof()) {
+		while (!scorefile.eof()) {
 			names.push_back("");
 			getline(scorefile, names[size(names) - 1], ':');
 			scorefile >> score;
